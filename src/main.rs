@@ -1,32 +1,21 @@
-use x11::xlib::{XNextEvent, XOpenDisplay};
-//use std::thread;
+use inputbot::{KeySequence, KeybdKey::*, MouseButton::*};
+use std::{thread::sleep, time::Duration};
+
 fn main() {
-    unsafe { 
-        let display = XOpenDisplay(std::ptr::null());
-        if display.is_null() {
-            panic!("Cannot open display");
+    // Bind the number 1 key your keyboard to a function that types 
+    // "Hello, world!" when pressed.
+    TabKey.bind(|| KeySequence("Hello, world!").send());
+
+    // Bind your caps lock key to a function that starts an autoclicker.
+    CapsLockKey.bind(move || {
+        while CapsLockKey.is_toggled() {
+            LeftButton.press();
+            LeftButton.release();
+
+            sleep(Duration::from_millis(30));
         }
+    });
 
-        println!("Display opened {:?}", display);
-
-    loop { 
-            let mut event = std::mem::zeroed();
-            XNextEvent(display, &mut event);
-            match event.get_type() {
-                x11::xlib::KeyPress => {
-                    println!("Key Pressed");
-                }
-                x11::xlib::KeyRelease => {
-                    println!("Key Released");
-                }
-                _ => {
-                    println!("Other Event");
-                }
-            }
-
-    }
-
-    }
-
-
+    // Call this to start listening for bound inputs.
+    inputbot::handle_input_events();
 }
